@@ -3,11 +3,27 @@
 , httpTypes, mtl, network, text, time, transformers
 }:
 
-cabal.mkDerivation (self: {
+cabal.mkDerivation (self:
+let
+  lib         = self.stdenv.lib;
+  isWithin    = p: dirPath: lib.hasPrefix (toString dirPath) (toString p);
+  cabalFilter = path: type: (
+                               !(lib.hasSuffix "~" (toString path)) &&
+                               !(lib.hasSuffix "#" (toString path)) &&
+                               !(lib.hasPrefix "." (toString path)) &&
+                               (
+                                   baseNameOf path == "oauthenticated.cabal" ||
+                                   baseNameOf path == "LICENSE"              ||
+                                   baseNameOf path == "Setup.hs"             ||
+                                   isWithin   path ./src                     ||
+                                   false
+                               )
+                            );
+in {
   pname = "oauthenticated";
 
   version = "0.1.3";
-  src = ./.;
+  src = builtins.filterSource cabalFilter ./.;
   #
   # sha256 = "12f9w8s5ir3skdr2dhlvr94f3sfbqjky5ppc943wj60sz0s7lha1";
   # jailbreak = true; # workaround 'exceptions ==0.3.*' constraint
