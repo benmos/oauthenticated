@@ -7,15 +7,15 @@ cabal.mkDerivation (self:
 let
   lib         = self.stdenv.lib;
   isWithin    = p: dirPath: lib.hasPrefix (toString dirPath) (toString p);
-  cabalFilter = path: type: (
-                               !(lib.hasSuffix "~" (toString path)) &&
-                               !(lib.hasSuffix "#" (toString path)) &&
-                               !(lib.hasPrefix "." (toString path)) &&
+  cabalFilter = path: type: (let pathBaseName = baseNameOf path; in
+                               !(lib.hasSuffix "~" pathBaseName) &&
+                               !(lib.hasSuffix "#" pathBaseName) &&
+                               !(lib.hasPrefix "." pathBaseName) &&
                                (
-                                   baseNameOf path == "oauthenticated.cabal" ||
-                                   baseNameOf path == "LICENSE"              ||
-                                   baseNameOf path == "Setup.hs"             ||
-                                   isWithin   path ./src                     ||
+                                   pathBaseName == "oauthenticated.cabal" ||
+                                   pathBaseName == "LICENSE"              ||
+                                   pathBaseName == "Setup.hs"             ||
+                                   isWithin path ./src                    ||
                                    false
                                )
                             );
